@@ -6,6 +6,21 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 
+const INTERESTS_OPTIONS = [
+  "AI",
+  "Web Dev",
+  "Mobile Dev",
+  "Blockchain",
+  "Cloud",
+  "DevOps",
+  "Data Science",
+  "Backend",
+  "Frontend",
+  "Full Stack",
+  "Open Source",
+  "Startups",
+];
+
 const EditProfile = ({ user }) => {
   const [firstName, setFirstName] = useState(user.data.firstName);
   const [lastName, setLastName] = useState(user.data?.lastName);
@@ -13,6 +28,7 @@ const EditProfile = ({ user }) => {
   const [age, setAge] = useState(user.data?.age);
   const [gender, setGender] = useState(user.data?.gender);
   const [about, setAbout] = useState(user.data?.about);
+  const [interests, setInterests] = useState(user.data?.interests || []);
   const [error, setError] = useState("");
 
   const [skills, setSkills] = useState(user.data?.skills || []);
@@ -34,6 +50,7 @@ const EditProfile = ({ user }) => {
       age,
       about,
       skills,
+      interests,
     };
     if (gender?.length) {
       data['gender'] = gender;
@@ -77,9 +94,9 @@ const EditProfile = ({ user }) => {
 
   return (
     <>
-      <div className="flex flex-col lg:flex-row justify-center items-start gap-8 py-8 px-4 w-full max-w-4xl mx-auto animate-fade-in-up">
+      <div className="flex flex-col lg:flex-row justify-center items-start gap-8 py-8 px-4 w-full max-w-4xl mx-auto animate-fade-in-up lg:pr-96">
         {/* Edit Form */}
-        <div className="glass-card rounded-2xl p-8 w-full max-w-md gradient-border">
+        <div className="glass-card rounded-2xl p-8 w-full max-w-md gradient-border max-h-screen overflow-y-auto">
           <form onSubmit={(e) => saveProfile(e)} className="space-y-4">
             <div className="text-center mb-6">
               <div className="text-3xl mb-2">✏️</div>
@@ -151,6 +168,39 @@ const EditProfile = ({ user }) => {
               />
             </div>
 
+            {/* Interests section */}
+            <div>
+              <label className="text-xs text-slate-400 font-medium mb-3 block">Select Your Interests</label>
+              <div className="grid grid-cols-2 gap-2">
+                {INTERESTS_OPTIONS.map((interest) => (
+                  <button
+                    key={interest}
+                    type="button"
+                    onClick={() => {
+                      if (interests.includes(interest)) {
+                        setInterests(interests.filter(i => i !== interest));
+                      } else {
+                        setInterests([...interests, interest]);
+                      }
+                    }}
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold transition ${
+                      interests.includes(interest)
+                        ? "bg-pink-500 text-white border border-pink-400"
+                        : "bg-slate-700/50 text-slate-300 border border-slate-600 hover:bg-slate-600/50"
+                    }`}
+                  >
+                    {interests.includes(interest) && <span className="mr-1">✓</span>}
+                    {interest}
+                  </button>
+                ))}
+              </div>
+              {interests.length > 0 && (
+                <p className="text-xs text-slate-400 mt-2">
+                  Selected: {interests.length}
+                </p>
+              )}
+            </div>
+
             {/* Skills section */}
             <div>
               <label className="text-xs text-slate-400 font-medium mb-1 block">Skills</label>
@@ -211,8 +261,8 @@ const EditProfile = ({ user }) => {
           </form>
         </div>
 
-        {/* Live preview */}
-        <div className="flex flex-col items-center gap-3">
+        {/* Live preview - Fixed Position */}
+        <div className="hidden lg:flex flex-col items-center gap-3 fixed right-8 top-24 h-fit z-30">
           <p className="text-sm text-slate-400 font-medium">Live Preview</p>
           {user && <UserCard userData={user} showButton={false} />}
         </div>

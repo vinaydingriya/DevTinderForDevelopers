@@ -103,6 +103,56 @@ const userSchema = new mongoose.Schema(
     },
     membershipType: {
       type: String
+    },
+    interests: {
+      type: [String],
+      trim: true,
+      enum: {
+        values: ["AI", "Web Dev", "Mobile Dev", "Blockchain", "Cloud", "DevOps", "Data Science", "Backend", "Frontend", "Full Stack", "Open Source", "Startups"],
+        message: "{VALUE} is not a valid interest"
+      },
+      default: []
+    },
+    projectRequirements: {
+      type: String,
+      trim: true,
+      maxLength: [300, "Project requirements cannot exceed 300 characters"],
+    },
+    likedUsers: {
+      type: [
+        {
+          userId: mongoose.Schema.Types.ObjectId,
+          likedAt: {
+            type: Date,
+            default: Date.now
+          }
+        }
+      ],
+      default: []
+    },
+    skippedUsers: {
+      type: [
+        {
+          userId: mongoose.Schema.Types.ObjectId,
+          skippedAt: {
+            type: Date,
+            default: Date.now
+          }
+        }
+      ],
+      default: []
+    },
+    matchedUsers: {
+      type: [
+        {
+          userId: mongoose.Schema.Types.ObjectId,
+          matchedAt: {
+            type: Date,
+            default: Date.now
+          }
+        }
+      ],
+      default: []
     }
   },
   {

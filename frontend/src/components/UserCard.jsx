@@ -4,8 +4,9 @@ import { useDispatch } from "react-redux";
 import { removeFeed } from "../utils/feedSlice";
 import { useState } from "react";
 
+/* eslint-disable react/prop-types */
 const UserCard = ({ userData, showButton = true }) => {
-  const { _id, firstName, lastName, photoUrl, about, age, gender } = showButton
+  const { _id, firstName, lastName, photoUrl, about, age, gender, skills, interests, score, matchMetrics } = showButton
     ? userData
     : userData.data;
 
@@ -62,6 +63,96 @@ const UserCard = ({ userData, showButton = true }) => {
           <p className="text-slate-300 text-sm leading-relaxed line-clamp-3 mb-4">
             {about}
           </p>
+        )}
+
+        {/* Skills Section */}
+        {skills && skills.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              Skills ({skills.length})
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {skills.slice(0, 4).map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-medium border border-blue-500/30 hover:bg-blue-500/30 transition"
+                >
+                  {skill}
+                </span>
+              ))}
+              {skills.length > 4 && (
+                <span className="px-3 py-1 bg-slate-600/30 text-slate-300 rounded-full text-xs font-medium">
+                  +{skills.length - 4} more
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Interests Section */}
+        {interests && interests.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              Interests ({interests.length})
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {interests.map((interest, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full text-xs font-medium border border-pink-500/30 hover:bg-pink-500/30 transition"
+                >
+                  {interest}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Match Metrics */}
+        {matchMetrics && (
+          <div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              Compatibility
+            </h3>
+            {matchMetrics.skillSimilarity !== undefined && (
+              <div className="mb-2">
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs text-slate-300">Skills</span>
+                  <span className="text-xs font-bold text-blue-400">{matchMetrics.skillSimilarity}%</span>
+                </div>
+                <div className="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-blue-400 h-1.5 rounded-full transition-all"
+                    style={{ width: `${matchMetrics.skillSimilarity}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+            {matchMetrics.interestSimilarity !== undefined && (
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs text-slate-300">Interests</span>
+                  <span className="text-xs font-bold text-pink-400">{matchMetrics.interestSimilarity}%</span>
+                </div>
+                <div className="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-pink-500 to-pink-400 h-1.5 rounded-full transition-all"
+                    style={{ width: `${matchMetrics.interestSimilarity}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Match Score Badge */}
+        {score && (
+          <div className="mb-4 p-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg border border-purple-500/30 text-center">
+            <p className="text-xs text-slate-300">Match Score</p>
+            <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+              {(score * 100).toFixed(0)}%
+            </p>
+          </div>
         )}
 
         {showButton && (
