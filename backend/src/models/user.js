@@ -153,6 +153,24 @@ const userSchema = new mongoose.Schema(
         }
       ],
       default: []
+    },
+    githubUsername: {
+      type: String,
+      trim: true,
+      maxLength: [39, "GitHub username cannot exceed 39 characters"],
+      validate: {
+        validator: (value) => !value || /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(value),
+        message: "Invalid GitHub username format",
+      },
+    },
+    githubProfileUrl: {
+      type: String,
+      trim: true,
+      maxLength: [200, "GitHub profile URL cannot exceed 200 characters"],
+      validate: {
+        validator: (value) => !value || /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9\-]+\/?$/.test(value),
+        message: "Invalid GitHub profile URL",
+      },
     }
   },
   {

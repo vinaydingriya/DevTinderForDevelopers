@@ -118,4 +118,39 @@
     border-color: rgba(139, 92, 246, 0.5);
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
   }
+
+  /* Online status dot pulse */
+  .online-dot {
+    animation: onlinePulse 2s ease-in-out infinite;
+  }
+
+  /* Typing indicator dots */
+  .typing-dot {
+    animation: typingBounce 1.4s ease-in-out infinite;
+  }
+
+  /* Repo card in chat */
+  .repo-card {
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.12);
+    transition: all 0.2s ease;
+  }
+  .repo-card:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.25);
+  }
+
+  /* Line clamp utility */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
 }

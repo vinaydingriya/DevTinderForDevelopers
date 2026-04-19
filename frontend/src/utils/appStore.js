@@ -5,6 +5,7 @@ import connectionsReducer from "./connectionsSlice"
 import requestsReducer from "./requestsSlice"
 import recommendationReducer from "./recommendationSlice"
 import filterReducer from "./filterSlice"
+import chatReducer from "./chatSlice"
 
 const store = configureStore({
     reducer: {
@@ -13,7 +14,8 @@ const store = configureStore({
         connections: connectionsReducer,
         requests: requestsReducer,
         recommendations: recommendationReducer,
-        filters: filterReducer
+        filters: filterReducer,
+        chat: chatReducer
     }
 })
 export default store;

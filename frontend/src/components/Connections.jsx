@@ -4,6 +4,7 @@ import { BASE_URL } from "../utils/constants";
 
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import { addConnections } from '../utils/connectionsSlice';
 
@@ -77,7 +78,13 @@ const Connections = () => {
                 </p>
               )}
             </div>
-            <div className="text-2xl flex-shrink-0">💬</div>
+            <Link
+              to={`/chat?userId=${connection._id}`}
+              className="text-2xl flex-shrink-0 hover:scale-110 transition-transform cursor-pointer"
+              title="Chat"
+            >
+              💬
+            </Link>
           </div>
         ))}
       </div>

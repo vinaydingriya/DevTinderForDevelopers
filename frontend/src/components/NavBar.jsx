@@ -7,12 +7,16 @@ import { removeUser } from "../utils/userSlice"
 import { removeAllFeed } from "../utils/feedSlice";
 import { removeAllRequests } from "../utils/requestsSlice";
 import { removeAllConnections } from "../utils/connectionsSlice";
+import { resetChat } from "../utils/chatSlice";
 
 const NavBar = () => {
   const user = useSelector(store => store.user);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const unreadCounts = useSelector(store => store.chat.unreadCounts);
+  const totalUnread = Object.values(unreadCounts).reduce((sum, c) => sum + c, 0);
 
   async function handleLogout() {
     try {
@@ -25,6 +29,7 @@ const NavBar = () => {
         dispatch(removeAllConnections());
         dispatch(removeAllFeed());
         dispatch(removeAllRequests());
+        dispatch(resetChat());
         navigate("/login");
       }
     }
@@ -86,6 +91,16 @@ const NavBar = () => {
               <li>
                 <Link to="/requests" className="flex items-center gap-2 rounded-lg hover:bg-purple-500/10 transition-colors">
                   <span>📩</span> Requests
+                </Link>
+              </li>
+              <li>
+                <Link to="/chat" className="flex items-center gap-2 rounded-lg hover:bg-purple-500/10 transition-colors">
+                  <span>💬</span> Chat
+                  {totalUnread > 0 && (
+                    <span className="ml-auto bg-pink-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </span>
+                  )}
                 </Link>
               </li>
               <li>
