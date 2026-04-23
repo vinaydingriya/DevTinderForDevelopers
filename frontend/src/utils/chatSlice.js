@@ -52,13 +52,15 @@ const chatSlice = createSlice({
       state.messages[chatRoomId] = [...newMessages, ...state.messages[chatRoomId]];
     },
     updateMessageStatus: (state, action) => {
-      const { chatRoomId, messageId, status, readAt, deliveredAt } = action.payload;
-      if (state.messages[chatRoomId]) {
-        const msg = state.messages[chatRoomId].find((m) => m._id === messageId);
+      const { messageId, status, readAt, deliveredAt } = action.payload;
+      // Scan all rooms since chatRoomId may not be provided
+      for (const roomId of Object.keys(state.messages)) {
+        const msg = state.messages[roomId].find((m) => m._id === messageId);
         if (msg) {
           msg.status = status;
           if (readAt) msg.readAt = readAt;
           if (deliveredAt) msg.deliveredAt = deliveredAt;
+          break;
         }
       }
     },
@@ -95,6 +97,10 @@ const chatSlice = createSlice({
     setUnreadCount: (state, action) => {
       const { roomId, count } = action.payload;
       state.unreadCounts[roomId] = count;
+    },
+    incrementUnread: (state, action) => {
+      const { roomId } = action.payload;
+      state.unreadCounts[roomId] = (state.unreadCounts[roomId] || 0) + 1;
     },
     decrementUnread: (state, action) => {
       const { roomId } = action.payload;
@@ -134,6 +140,7 @@ export const {
   setOnlineUsers,
   toggleUserOnline,
   setUnreadCount,
+  incrementUnread,
   decrementUnread,
   updateRoomLastMessage,
   resetChat,

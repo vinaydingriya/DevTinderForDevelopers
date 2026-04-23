@@ -150,7 +150,7 @@ const ChatList = ({ rooms, activeRoomId, loading, error, onSelectRoom, currentUs
                         {room.lastMessage?.text || "Start a conversation..."}
                       </p>
                       {unread > 0 && (
-                        <span className="bg-pink-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center flex-shrink-0 ml-2">
+                        <span className="bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center flex-shrink-0 ml-2 shadow-lg shadow-emerald-500/30">
                           {unread}
                         </span>
                       )}

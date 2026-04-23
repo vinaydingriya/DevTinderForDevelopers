@@ -82,7 +82,7 @@ const ChatPage = () => {
   if (!user?.data) return null;
 
   return (
-    <div className="w-full max-w-6xl mx-auto h-[calc(100vh-80px)] flex animate-fade-in-up">
+    <div className="w-full h-full flex animate-fade-in-up">
       {/* Connection status indicator */}
       {!isConnected && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up">

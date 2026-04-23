@@ -8,10 +8,10 @@ import { BASE_URL } from "../utils/constants";
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
 
-  const [firstName, setFirstName] = useState("John");
-  const [lastName, setLastName] = useState("Doe");
-  const [email, setEmail] = useState("john@gmail.com");
-  const [password, setPassword] = useState("Passwo3#");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -85,7 +85,7 @@ const Login = () => {
                 </label>
                 <input
                   className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none input-glow transition-all"
-                  placeholder="John"
+                  placeholder="First Name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                 />
@@ -96,7 +96,7 @@ const Login = () => {
                 </label>
                 <input
                   className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none input-glow transition-all"
-                  placeholder="Doe"
+                  placeholder="Last Name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                 />
@@ -110,7 +110,7 @@ const Login = () => {
             </label>
             <input
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none input-glow transition-all"
-              placeholder="you@example.com"
+              placeholder="example@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />

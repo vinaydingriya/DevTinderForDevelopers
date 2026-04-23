@@ -11,7 +11,8 @@ import {
   updateMessageStatus,
   markRoomMessagesRead,
   updateRoomLastMessage,
-  setUnreadCount,
+  incrementUnread,
+  decrementUnread,
 } from "./chatSlice";
 
 const SocketContext = createContext(null);
@@ -25,6 +26,12 @@ export const SocketProvider = ({ children }) => {
   const activeRoomId = useSelector((store) => store.chat.activeRoomId);
   const dispatch = useDispatch();
 
+  // Keep a ref to activeRoomId so socket handlers always see the latest value
+  const activeRoomIdRef = useRef(activeRoomId);
+  useEffect(() => {
+    activeRoomIdRef.current = activeRoomId;
+  }, [activeRoomId]);
+
   useEffect(() => {
     if (!user?.data?._id) {
       // Disconnect if logged out
@@ -35,6 +42,8 @@ export const SocketProvider = ({ children }) => {
       }
       return;
     }
+
+    const currentUserId = user.data._id;
 
     // Connect Socket.IO  
     const socket = io(BASE_URL, {
@@ -64,6 +73,7 @@ export const SocketProvider = ({ children }) => {
       dispatch(toggleUserOnline({ userId, isOnline }));
     });
 
+    // Messages received via the chatRoom socket room (when user has joined_room)
     socket.on("receive_message", (message) => {
       dispatch(addMessage(message));
       dispatch(
@@ -77,11 +87,49 @@ export const SocketProvider = ({ children }) => {
         })
       );
 
-      // If message is from someone else and we're not in that room, increment unread
       const msgSenderId = message.senderId?._id || message.senderId;
-      if (msgSenderId !== user.data._id) {
+      if (msgSenderId !== currentUserId) {
         // Auto-deliver acknowledgment
         socket.emit("message_delivered", { messageId: message._id });
+
+        // If we're NOT currently viewing this room, increment unread
+        if (activeRoomIdRef.current !== message.chatRoomId) {
+          dispatch(incrementUnread({ roomId: message.chatRoomId }));
+        } else {
+          // We're viewing this room — mark as read immediately
+          socket.emit("message_read", { chatRoomId: message.chatRoomId });
+        }
+      }
+    });
+
+    // Global notification: received via the user's personal room
+    // Ensures messages arrive even when user is on Feed/Connections/etc.
+    socket.on("new_message_notification", (message) => {
+      const msgSenderId = message.senderId?._id || message.senderId;
+      if (msgSenderId === currentUserId) return; // ignore own messages
+
+      // Add the message to Redux (addMessage deduplicates by _id/clientMessageId)
+      dispatch(addMessage(message));
+      dispatch(
+        updateRoomLastMessage({
+          roomId: message.chatRoomId,
+          lastMessage: {
+            text: message.text?.substring(0, 100),
+            senderId: msgSenderId,
+            createdAt: message.createdAt,
+          },
+        })
+      );
+
+      // Auto-deliver acknowledgment
+      socket.emit("message_delivered", { messageId: message._id });
+
+      // If we're NOT currently viewing this room, increment unread
+      if (activeRoomIdRef.current !== message.chatRoomId) {
+        dispatch(incrementUnread({ roomId: message.chatRoomId }));
+      } else {
+        // We're viewing this room — mark as read immediately
+        socket.emit("message_read", { chatRoomId: message.chatRoomId });
       }
     });
 
@@ -94,7 +142,6 @@ export const SocketProvider = ({ children }) => {
     });
 
     socket.on("message_delivered", ({ messageId, deliveredAt }) => {
-      // Find which room this message belongs to and update
       dispatch(
         updateMessageStatus({
           messageId,

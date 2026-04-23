@@ -36,6 +36,10 @@ function initializeSocket(io) {
   io.on("connection", (socket) => {
     const userId = socket.user._id.toString();
 
+    // Join personal room so this user receives messages globally
+    // (even when not viewing a specific chat)
+    socket.join(userId);
+
     // Track user as online
     if (!onlineUsers.has(userId)) {
       onlineUsers.set(userId, new Set());
@@ -159,8 +163,20 @@ function initializeSocket(io) {
           "firstName lastName photoUrl"
         );
 
-        // Emit to room
+        // Emit to the chatRoom (for users who have the chat open)
         io.to(chatRoomId).emit("receive_message", populatedMessage.toObject());
+
+        // Also emit a notification to the receiver's personal room
+        // so they get it even if they're on a different page / different chat
+        const recipientIdForNotif = room.participants
+          .find((p) => !p.equals(userId))
+          ?.toString();
+        if (recipientIdForNotif) {
+          io.to(recipientIdForNotif).emit("new_message_notification", {
+            ...populatedMessage.toObject(),
+            chatRoomId,
+          });
+        }
 
         // Check if recipient is online and mark as delivered
         const recipientId = room.participants
