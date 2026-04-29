@@ -60,24 +60,26 @@ const Connections = () => {
             className="glass-card rounded-2xl p-4 flex items-center gap-4 gradient-border hover:scale-[1.01] transition-all duration-300 opacity-0 animate-fade-in-up"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
-            <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-purple-500/30 flex-shrink-0">
-              <img
-                src={connection.photoUrl}
-                alt={connection.firstName}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-white text-lg truncate">
-                {connection.firstName +
-                  (connection.lastName ? " " + connection.lastName : "")}
-              </h3>
-              {connection.about && (
-                <p className="text-slate-400 text-sm truncate mt-0.5">
-                  {connection.about}
-                </p>
-              )}
-            </div>
+            <Link to={`/user/${connection._id}`} className="flex items-center gap-4 flex-1 min-w-0">
+              <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-purple-500/30 flex-shrink-0">
+                <img
+                  src={connection.photoUrl}
+                  alt={connection.firstName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-white text-lg truncate hover:text-purple-300 transition-colors">
+                  {connection.firstName +
+                    (connection.lastName ? " " + connection.lastName : "")}
+                </h3>
+                {connection.about && (
+                  <p className="text-slate-400 text-sm truncate mt-0.5">
+                    {connection.about}
+                  </p>
+                )}
+              </div>
+            </Link>
             <Link
               to={`/chat?userId=${connection._id}`}
               className="text-2xl flex-shrink-0 hover:scale-110 transition-transform cursor-pointer"

@@ -102,4 +102,20 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 });
+// Get a single user's public profile by ID
+userRouter.get("/user/profile/:userId", userAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).select(
+      USER_SAFE_DATA + " interests email isPremium membershipType createdAt"
+    );
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({ data: user });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 module.exports = userRouter;

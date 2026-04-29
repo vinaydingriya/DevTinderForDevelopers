@@ -20,6 +20,10 @@ const connectionRequestSchema = new mongoose.Schema(
         message: `{VALUE} is incorrect status type, Valid types are- ignored, interested, accepted, rejected`,
       },
     },
+    isSuperLike: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

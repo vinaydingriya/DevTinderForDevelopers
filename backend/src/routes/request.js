@@ -43,6 +43,7 @@ requestRouter.post(
         fromUserId,
         toUserId,
         status,
+        isSuperLike: req.body.isSuperLike === true,
       });
 
       const data = await connectionRequest.save();

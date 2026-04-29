@@ -5,8 +5,11 @@ import Feed from "./components/Feed";
 import Connections from "./components/Connections";
 import Requests from "./components/Requests";
 import ChatPage from "./components/chat/ChatPage";
-import Password from "./components/Password";
+import SettingsPage from "./components/SettingsPage";
 import Premium from "./components/Premium";
+import PostsPage from "./components/PostsPage";
+import ConnectionProfile from "./components/ConnectionProfile";
+import SuperLikesPage from "./components/SuperLikesPage";
 
 import appStore from "./utils/appStore";
 import { SocketProvider } from "./utils/socketContext";
@@ -42,8 +45,11 @@ function App() {
                 <Route path="profile" element={<Profile />} />
                 <Route path="connections" element={<Connections />} />
                 <Route path="requests" element={<Requests />} />
-                <Route path="password" element={<Password />} />
+                <Route path="settings" element={<SettingsPage />} />
                 <Route path="premium" element={<Premium />} />
+                <Route path="posts" element={<PostsPage />} />
+                <Route path="user/:userId" element={<ConnectionProfile />} />
+                <Route path="superlikes" element={<SuperLikesPage />} />
                 <Route path="chat" element={<ChatPage />} />
               </Route>
             </Routes>

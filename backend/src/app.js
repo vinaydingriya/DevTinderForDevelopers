@@ -34,6 +34,8 @@ const userRouter = require("./routes/user");
 const paymentRouter = require("./routes/payment");
 const recommendationRouter = require("./routes/recommendation");
 const chatRouter = require("./routes/chat");
+const postRouter = require("./routes/post");
+const superLikeRouter = require("./routes/superlike");
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
@@ -42,6 +44,8 @@ app.use("/", userRouter);
 app.use("/", paymentRouter);
 app.use("/api", recommendationRouter);
 app.use("/", chatRouter);
+app.use("/", postRouter);
+app.use("/", superLikeRouter);
 
 // Initialize Socket.IO
 const { initializeSocket } = require("./socket/socketHandler");

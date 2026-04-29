@@ -11,12 +11,13 @@ import { resetChat } from "../../utils/chatSlice";
 
 import {
   Flame,
+  PenSquare,
   MessageCircle,
   Users,
   Inbox,
   User,
   Crown,
-  Lock,
+  Settings,
   LogOut,
   PanelLeftClose,
   PanelLeft,
@@ -24,6 +25,7 @@ import {
 
 const navItems = [
   { path: "/", icon: Flame, label: "Feed" },
+  { path: "/posts", icon: PenSquare, label: "Posts" },
   { path: "/chat", icon: MessageCircle, label: "Chats", badge: "chat" },
   { path: "/connections", icon: Users, label: "Connections" },
   { path: "/requests", icon: Inbox, label: "Requests" },
@@ -148,11 +150,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
       {/* ── Bottom section ── */}
       <div className="pb-3 pt-1">
         <Link
-          to="/password"
-          className={`sidebar-nav-item ${isActive("/password") ? "active" : ""}`}
+          to="/settings"
+          className={`sidebar-nav-item ${isActive("/settings") ? "active" : ""}`}
           title={collapsed ? "Settings" : undefined}
         >
-          <Lock className="nav-icon" strokeWidth={1.8} />
+          <Settings className="nav-icon" strokeWidth={1.8} />
           <span className="sidebar-label">Settings</span>
         </Link>
 
