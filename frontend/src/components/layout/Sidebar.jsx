@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { BASE_URL } from "../../utils/constants";
+import api from "../../utils/api";
 
 import { removeUser } from "../../utils/userSlice";
 import { removeAllFeed } from "../../utils/feedSlice";
@@ -44,21 +43,18 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   async function handleLogout() {
     try {
-      const res = await axios.post(
-        BASE_URL + "/logout",
-        {},
-        { withCredentials: true }
-      );
-      if (res.status === 200) {
-        dispatch(removeUser());
-        dispatch(removeAllConnections());
-        dispatch(removeAllFeed());
-        dispatch(removeAllRequests());
-        dispatch(resetChat());
-        navigate("/login");
-      }
+      await api.post("/logout");
+      localStorage.removeItem("token");
+      dispatch(removeUser());
+      dispatch(removeAllConnections());
+      dispatch(removeAllFeed());
+      dispatch(removeAllRequests());
+      dispatch(resetChat());
+      navigate("/login");
     } catch (e) {
       console.log(e);
+      localStorage.removeItem("token");
+      navigate("/login");
     }
   }
 

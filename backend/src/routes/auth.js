@@ -4,13 +4,13 @@ const authRouter = express.Router();
 const { validatePassword } = require("../utils/validation");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
-const {filterFields} = require("../utils/filterFields");
+const { filterFields } = require("../utils/filterFields");
 
 authRouter.post("/signup", async (req, res) => {
   try {
     const { firstName, lastName, email, password, age, gender, photoUrl, about, skills } = req.body; // List expected fields
     const { _id, __v, createdAt, updatedAt } = req.body;
-    if (_id !== undefined || __v !== undefined || createdAt !== undefined  || updatedAt !== undefined) {
+    if (_id !== undefined || __v !== undefined || createdAt !== undefined || updatedAt !== undefined) {
       throw new Error("Invalid signup request")
     }
 
@@ -19,7 +19,7 @@ authRouter.post("/signup", async (req, res) => {
 
     // Encrypt the password
     const passwordHash = await bcrypt.hash(password, 10);
-    const u = { firstName, email, password: passwordHash};
+    const u = { firstName, email, password: passwordHash };
 
     if (lastName) u.lastName = lastName;
     if (age) u.age = age;
@@ -31,9 +31,9 @@ authRouter.post("/signup", async (req, res) => {
     const user = new User(u);
 
     await user.save();
-    res.json({message: "User added successfully!", data: filterFields(user)});
+    res.json({ message: "User added successfully!", data: filterFields(user) });
   } catch (e) {
-    res.status(400).json({error: e.message});
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -59,14 +59,15 @@ authRouter.post("/login", async (req, res) => {
 
       res.json({
         message: "Login successful",
+        token,
         data: filterFields(user)
       });
-    } 
+    }
     else {
       throw new Error("Invalid credentials");
     }
   } catch (e) {
-    res.status(400).json({error: e.message});
+    res.status(400).json({ error: e.message });
   }
 });
 
@@ -77,7 +78,7 @@ authRouter.post("/logout", async (req, res) => {
     sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
     expires: new Date(Date.now()),
   });
-  res.json({message: "Logout successful"});
+  res.json({ message: "Logout successful" });
 });
 
 module.exports = authRouter;

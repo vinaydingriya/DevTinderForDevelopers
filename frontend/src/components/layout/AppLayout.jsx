@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
-import { BASE_URL } from "../../utils/constants";
+import api from "../../utils/api";
 import { addUser } from "../../utils/userSlice";
 import Sidebar from "./Sidebar";
+import MobileNav from "./MobileNav";
 
 const AppLayout = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((store) => store.user);
+  const location = useLocation();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -22,10 +23,7 @@ const AppLayout = () => {
       if (user.data) return;
 
       try {
-        const res = await axios.get(`${BASE_URL}/profile/view`, {
-          withCredentials: true,
-          signal,
-        });
+        const res = await api.get("/profile/view", { signal });
         dispatch(addUser(res.data.data));
       } catch (e) {
         // Cancelled requests (e.g. React StrictMode cleanup) must not
@@ -44,20 +42,30 @@ const AppLayout = () => {
     };
   }, [dispatch, navigate, user]);
 
+  // Hide mobile nav on chat detail view
+  const hideMobileNav = location.pathname.startsWith("/chat/") && location.pathname !== "/chat";
+
   return (
-    <div className="h-screen flex overflow-hidden bg-[#0f1729]">
-      {/* Sidebar — only show when user is authenticated */}
+    <div className="h-screen flex flex-col md:flex-row overflow-hidden bg-[#0f1729]">
+      {/* Desktop Sidebar */}
       {user?.data && (
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed((c) => !c)}
-        />
+        <div className="hidden md:block">
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed((c) => !c)}
+          />
+        </div>
       )}
 
       {/* Main content area */}
-      <main className="content-area flex-1 min-w-0">
+      <main className="content-area flex-1 min-w-0 pb-16 md:pb-0">
         <Outlet />
       </main>
+
+      {/* Mobile bottom nav */}
+      {user?.data && !hideMobileNav && (
+        <MobileNav />
+      )}
     </div>
   );
 };

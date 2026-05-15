@@ -1,5 +1,4 @@
-import axios from "axios";
-import { BASE_URL } from "../utils/constants";
+import api from "../utils/api";
 import { useDispatch } from "react-redux";
 import { removeFeed } from "../utils/feedSlice";
 import { useState } from "react";
@@ -18,11 +17,7 @@ const UserCard = ({ userData, showButton = true }) => {
     if (loading) return;
     setLoading(true);
     try {
-      await axios.post(
-        BASE_URL + `/request/send/${status}/${_id}`,
-        {},
-        { withCredentials: true }
-      );
+      await api.post(`/request/send/${status}/${_id}`);
       dispatch(removeFeed(_id));
     } catch (e) {
       if (e?.response?.data?.error === "Connection request already exists") {
@@ -35,7 +30,7 @@ const UserCard = ({ userData, showButton = true }) => {
   }
 
   return (
-    <div className="glass-card rounded-2xl w-80 overflow-hidden gradient-border hover:scale-[1.02] transition-all duration-300">
+    <div className="glass-card rounded-2xl w-full max-w-xs sm:w-80 overflow-hidden gradient-border hover:scale-[1.02] transition-all duration-300">
       {/* Photo */}
       <div className="relative overflow-hidden">
         <img

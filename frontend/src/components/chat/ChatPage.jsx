@@ -1,8 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-import axios from "axios";
-import { BASE_URL } from "../../utils/constants";
+import api from "../../utils/api";
 import { setRooms, setActiveRoom } from "../../utils/chatSlice";
 import { useSocket } from "../../utils/socketContext";
 import ChatList from "./ChatList";
@@ -22,9 +21,7 @@ const ChatPage = () => {
   const fetchRooms = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/chat/rooms`, {
-        withCredentials: true,
-      });
+      const res = await api.get("/chat/rooms");
       dispatch(setRooms(res.data.data));
     } catch (e) {
       setError(e?.response?.data?.error || "Failed to load chats");
@@ -46,9 +43,7 @@ const ChatPage = () => {
 
     async function openChatWithUser() {
       try {
-        const res = await axios.get(`${BASE_URL}/chat/room/${targetUserId}`, {
-          withCredentials: true,
-        });
+        const res = await api.get(`/chat/room/${targetUserId}`);
         const room = res.data.data;
 
         // Add to rooms if not already there

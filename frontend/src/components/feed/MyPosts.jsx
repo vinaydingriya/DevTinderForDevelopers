@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
-import { BASE_URL } from "../../utils/constants";
+import api from "../../utils/api";
 import { Heart, Trash2, ImageIcon, Film, Loader2 } from "lucide-react";
 
 const MyPostCard = ({ post, onDelete }) => {
@@ -110,10 +109,7 @@ const MyPosts = ({ userId }) => {
       if (!userId) return;
       try {
         setLoading(true);
-        const res = await axios.get(
-          `${BASE_URL}/posts/me?page=${pageNum}&limit=10`,
-          { withCredentials: true }
-        );
+        const res = await api.get(`/posts/me?page=${pageNum}&limit=10`);
         if (pageNum === 1) {
           setPosts(res.data.data);
         } else {
@@ -136,9 +132,7 @@ const MyPosts = ({ userId }) => {
 
   const handleDelete = async (postId) => {
     try {
-      await axios.delete(`${BASE_URL}/posts/${postId}`, {
-        withCredentials: true,
-      });
+      await api.delete(`/posts/${postId}`);
       setPosts((prev) => prev.filter((p) => p._id !== postId));
     } catch (e) {
       console.error("Failed to delete post:", e);

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import { BASE_URL } from "../../utils/constants";
+import api from "../../utils/api";
 import { useDispatch } from "react-redux";
 import { removeFeed } from "../../utils/feedSlice";
 import { Star, X, Heart } from "lucide-react";
@@ -29,11 +28,8 @@ const DeveloperCard = ({ user, totalCount, currentIndex }) => {
 
       setTimeout(async () => {
         try {
-          await axios.post(
-            `${BASE_URL}/request/send/${status}/${_id}`,
-            {},
-            { withCredentials: true }
-          );
+          await api.post(`/request/send/${status}/${_id}`,
+            {});
           dispatch(removeFeed(_id));
         } catch (e) {
           if (e?.response?.data?.error === "Connection request already exists") {
@@ -57,22 +53,16 @@ const DeveloperCard = ({ user, totalCount, currentIndex }) => {
     setTimeout(async () => {
       try {
         // 1. Save the super like
-        await axios.post(
-          `${BASE_URL}/superlike/${_id}`,
-          {},
-          { withCredentials: true }
-        );
+        await api.post(`/superlike/${_id}`,
+          {});
       } catch (e) {
         console.error("Super like save:", e?.response?.data?.error || e);
       }
 
       try {
         // 2. Also send interested connection request
-        await axios.post(
-          `${BASE_URL}/request/send/interested/${_id}`,
-          {},
-          { withCredentials: true }
-        );
+        await api.post(`/request/send/interested/${_id}`,
+          {});
       } catch (e) {
         // It's OK if connection request already exists
         console.error("Connect:", e?.response?.data?.error || e);
@@ -106,14 +96,14 @@ const DeveloperCard = ({ user, totalCount, currentIndex }) => {
   const matchPercent = score ? (score * 100).toFixed(0) : null;
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-4">
+    <div className="flex flex-col items-center justify-center h-full px-3 sm:px-4">
       {/* Card */}
       <div
-        className={`relative w-[380px] rounded-3xl overflow-hidden glass-card gradient-border ${getAnimClass()}`}
-        style={{ maxHeight: "calc(100vh - 120px)" }}
+        className={`relative w-full max-w-[380px] rounded-3xl overflow-hidden glass-card gradient-border ${getAnimClass()}`}
+        style={{ maxHeight: "calc(100vh - 140px)" }}
       >
         {/* Photo */}
-        <div className="relative h-[380px] overflow-hidden">
+        <div className="relative h-[280px] sm:h-[340px] md:h-[380px] overflow-hidden">
           <img
             src={photoUrl}
             alt={`${firstName}'s photo`}
@@ -207,8 +197,8 @@ const DeveloperCard = ({ user, totalCount, currentIndex }) => {
         </div>
       </div>
 
-      {/* Keyboard hint */}
-      <p className="mt-2 text-[10px] text-slate-600">
+      {/* Keyboard hint — hidden on touch devices */}
+      <p className="mt-2 text-[10px] text-slate-600 hidden md:block">
         Use <kbd className="px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-mono text-[10px]">←</kbd> Pass · <kbd className="px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-mono text-[10px]">→</kbd> Connect
       </p>
     </div>

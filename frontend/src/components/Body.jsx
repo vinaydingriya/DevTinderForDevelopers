@@ -6,10 +6,9 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { useEffect } from "react";
 
-import { BASE_URL } from "../utils/constants";
 import { addUser } from "../utils/userSlice";
 
-import axios from "axios";
+import api from "../utils/api";
 
 const Body = () => {
   const navigate = useNavigate();
@@ -29,8 +28,7 @@ const Body = () => {
       }
 
       try {
-        const res = await axios.get(`${BASE_URL}/profile/view`, {
-          withCredentials: true,
+        const res = await api.get("/profile/view", {
           signal,
         });
         dispatch(addUser(res.data.data));

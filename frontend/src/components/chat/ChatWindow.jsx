@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import axios from "axios";
-import { BASE_URL } from "../../utils/constants";
+import api from "../../utils/api";
 import { setMessages, prependMessages, decrementUnread } from "../../utils/chatSlice";
 import { useSocket } from "../../utils/socketContext";
 import MessageBubble from "./MessageBubble";
@@ -45,10 +44,7 @@ const ChatWindow = ({ roomId, currentUserId, onBack }) => {
     async (pageNum = 1) => {
       try {
         setLoadingMessages(true);
-        const res = await axios.get(
-          `${BASE_URL}/chat/messages/${roomId}?page=${pageNum}&limit=50`,
-          { withCredentials: true }
-        );
+        const res = await api.get(`/chat/messages/${roomId}?page=${pageNum}&limit=50`);
 
         if (pageNum === 1) {
           dispatch(setMessages({ chatRoomId: roomId, messages: res.data.data }));

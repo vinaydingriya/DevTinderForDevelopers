@@ -1,9 +1,8 @@
-import axios from "axios";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
-import { BASE_URL } from "../utils/constants";
+import api from "../utils/api";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -21,13 +20,13 @@ const Login = () => {
   async function handleLogin(e) {
     e.preventDefault();
     try {
-      const res = await axios.post(
-        BASE_URL + "/login",
-        { email, password },
-        { withCredentials: true }
-      );
+      const res = await api.post("/login", { email, password });
       if (res.status === 200) {
         setError("");
+        // Store token for cross-origin auth
+        if (res.data.token) {
+          localStorage.setItem("token", res.data.token);
+        }
         dispatch(addUser(res.data.data));
         navigate("/");
         console.clear();
@@ -41,11 +40,7 @@ const Login = () => {
   async function handleSignup(e) {
     e.preventDefault();
     try {
-      const res = await axios.post(
-        BASE_URL + "/signup",
-        { firstName, lastName, email, password },
-        { withCredentials: true }
-      );
+      const res = await api.post("/signup", { firstName, lastName, email, password });
 
       if (res.status === 200) {
         setError("");

@@ -1,19 +1,17 @@
 import { useState } from "react";
-import { BASE_URL } from "../utils/constants";
+import api from "../utils/api";
 import { useEffect } from "react";
 
 const Premium = () => {
   const [isPremium, setIsPremium] = useState(false);
 
   const verifyPremiumStatus = async () => {
-    const res = await fetch(BASE_URL + "/verify/isPremium", {
-      credentials: "include"
-    });
-    const json = await res.json();
-
-    if (json.isPremium) {
-      setIsPremium(true);
-    }
+    try {
+      const res = await api.get("/verify/isPremium");
+      if (res.data.isPremium) {
+        setIsPremium(true);
+      }
+    } catch(e) { console.log(e); }
   }
 
   useEffect(() => {
@@ -21,15 +19,8 @@ const Premium = () => {
   }, []);
 
   const buyMembership = async (membershipType) => {
-    const res = await fetch(BASE_URL + "/payment/create", {
-      body: JSON.stringify({ membershipType }),
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
-    const order = await res.json();
+    const res = await api.post("/payment/create", { membershipType });
+    const order = res.data;
     console.log(order);
 
     const { amount, notes, currency, order_id } = order.data;

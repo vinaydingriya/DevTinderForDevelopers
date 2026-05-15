@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
-import { BASE_URL } from "../../utils/constants";
+import api from "../../utils/api";
 import { X, Image, Film, Upload, Loader2 } from "lucide-react";
 
 const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
@@ -56,8 +55,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
       if (text.trim()) formData.append("text", text.trim());
       if (file) formData.append("media", file);
 
-      const res = await axios.post(`${BASE_URL}/posts`, formData, {
-        withCredentials: true,
+      const res = await api.post("/posts", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

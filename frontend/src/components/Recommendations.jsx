@@ -38,11 +38,7 @@ const Recommendations = () => {
     try {
       dispatch(setLoading(true));
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/recommendations?limit=10`,
-        {
-          withCredentials: true
-        }
-      );
+        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/recommendations?limit=10`);
 
       dispatch(setRecommendations(response.data.data));
       dispatch(setError(null));
@@ -62,11 +58,7 @@ const Recommendations = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/recommendations/feed?page=${Math.ceil(
           (currentIndex + 1) / 10
-        )}&pageSize=10`,
-        {
-          withCredentials: true
-        }
-      );
+        )}&pageSize=10`);
 
       // Add to existing recommendations
       if (response.data.data && response.data.data.length > 0) {
@@ -87,11 +79,7 @@ const Recommendations = () => {
       setIsMatching(true);
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/recommendations/${users[currentIndex]._id}/like`,
-        {},
-        {
-          withCredentials: true
-        }
-      );
+        {});
 
       dispatch(
         addInteraction({
@@ -125,11 +113,7 @@ const Recommendations = () => {
     try {
       await axios.post(
         `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/recommendations/${users[currentIndex]._id}/skip`,
-        {},
-        {
-          withCredentials: true
-        }
-      );
+        {});
 
       dispatch(
         addInteraction({
@@ -154,11 +138,7 @@ const Recommendations = () => {
 
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/recommendations/${users[currentIndex]._id}/compatibility`,
-        {
-          withCredentials: true
-        }
-      );
+        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/recommendations/${users[currentIndex]._id}/compatibility`);
 
       alert(
         `Compatibility Report:\n\n` +

@@ -1,5 +1,4 @@
-import axios from "axios";
-import { BASE_URL } from "../utils/constants";
+import api from "../utils/api";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { addRequests, removeRequest } from "../utils/requestsSlice";
@@ -11,11 +10,7 @@ const Requests = () => {
 
   async function reviewRequest(_id, status) {
     try {
-      await axios.post(
-        BASE_URL + `/request/review/${status}/${_id}`,
-        {},
-        { withCredentials: true }
-      );
+      await api.post(`/request/review/${status}/${_id}`);
       dispatch(removeRequest(_id));
     } catch (e) {
       console.log(e);
@@ -29,8 +24,7 @@ const Requests = () => {
     async function fetchRequests() {
       if (connectionRequests.length > 0) return;
       try {
-        const res = await axios.get(BASE_URL + "/user/requests/received", {
-          withCredentials: true,
+        const res = await api.get("/user/requests/received", {
           signal,
         });
         dispatch(addRequests(res.data.data));
@@ -84,7 +78,7 @@ const Requests = () => {
                   {firstName + (lastName ? " " + lastName : "")}
                 </h3>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
+              <div className="flex gap-2 flex-shrink-0 flex-col sm:flex-row">
                 <button
                   className="px-4 py-2 rounded-xl btn-success-gradient text-sm font-medium"
                   onClick={() => reviewRequest(r._id, "accepted")}

@@ -46,8 +46,10 @@ export const SocketProvider = ({ children }) => {
     const currentUserId = user.data._id;
 
     // Connect Socket.IO  
+    const token = localStorage.getItem("token");
     const socket = io(BASE_URL, {
       withCredentials: true,
+      auth: { token },
       transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: 10,

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { BASE_URL } from "../../utils/constants";
+import api from "../../utils/api";
 
 const SharedResourcesPanel = ({ roomId, onClose }) => {
   const [resources, setResources] = useState([]);
@@ -13,9 +12,7 @@ const SharedResourcesPanel = ({ roomId, onClose }) => {
   const fetchResources = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/chat/room/${roomId}/resources`, {
-        withCredentials: true,
-      });
+      const res = await api.get(`/chat/room/${roomId}/resources`);
       setResources(res.data.data || []);
     } catch (e) {
       console.error("Failed to fetch resources:", e);

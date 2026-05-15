@@ -1,5 +1,4 @@
-import axios from "axios";
-import { BASE_URL } from "../utils/constants";
+import api from "../utils/api";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addFeed } from "../utils/feedSlice";
@@ -27,6 +26,9 @@ const Feed = () => {
     const signal = controller.signal;
 
     async function handleFeed() {
+      // Skip fetch if feed is already loaded and no filters changed
+      if (feed.length > 0 && filters.appliedFilters.length === 0 && !isFiltered) return;
+
       setLoading(true);
       setError(null);
 
@@ -35,17 +37,15 @@ const Feed = () => {
 
         if (filters.appliedFilters.length > 0) {
           const skillsQuery = filters.appliedFilters.join(",");
-          res = await axios.get(
-            BASE_URL +
-              `/api/recommendations/filtered-by-skills?skills=${encodeURIComponent(
-                skillsQuery
-              )}&limit=50`,
-            { withCredentials: true, signal }
+          res = await api.get(
+            `/api/recommendations/filtered-by-skills?skills=${encodeURIComponent(
+              skillsQuery
+            )}&limit=50`,
+            { signal }
           );
           setIsFiltered(true);
         } else {
-          res = await axios.get(BASE_URL + "/api/feed", {
-            withCredentials: true,
+          res = await api.get("/feed", {
             signal,
           });
           setIsFiltered(false);
@@ -117,7 +117,7 @@ const Feed = () => {
         {/* Filter button */}
         <button
           onClick={() => setShowFilters(true)}
-          className="absolute top-4 right-5 z-10 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200 border border-white/5 transition-all"
+          className="absolute top-3 right-3 sm:top-4 sm:right-5 z-10 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs font-medium bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200 border border-white/5 transition-all"
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           Filters
@@ -154,7 +154,7 @@ const Feed = () => {
       {/* Filter button — top right */}
       <button
         onClick={() => setShowFilters(true)}
-        className="absolute top-4 right-5 z-10 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200 border border-white/5 hover:border-white/10 transition-all"
+        className="absolute top-3 right-3 sm:top-4 sm:right-5 z-10 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs font-medium bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200 border border-white/5 hover:border-white/10 transition-all"
       >
         <SlidersHorizontal className="w-3.5 h-3.5" />
         Filters

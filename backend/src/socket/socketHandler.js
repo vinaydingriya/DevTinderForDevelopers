@@ -12,8 +12,14 @@ function initializeSocket(io) {
   // Socket authentication middleware
   io.use(async (socket, next) => {
     try {
+      // Try cookie first, then handshake auth token
+      let token;
       const cookies = cookie.parse(socket.handshake.headers.cookie || "");
-      const token = cookies.token;
+      token = cookies.token;
+
+      if (!token && socket.handshake.auth?.token) {
+        token = socket.handshake.auth.token;
+      }
 
       if (!token) {
         return next(new Error("Authentication error: No token"));

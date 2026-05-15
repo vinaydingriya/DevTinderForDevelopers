@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { BASE_URL } from "../../utils/constants";
+import api from "../../utils/api";
 
 const RepoCard = ({ reference }) => {
   const [metadata, setMetadata] = useState(reference.metadata || {});
@@ -20,10 +19,7 @@ const RepoCard = ({ reference }) => {
   const fetchMetadata = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        `${BASE_URL}/chat/github/repo/${reference.owner}/${reference.repoName}`,
-        { withCredentials: true }
-      );
+      const res = await api.get(`/chat/github/repo/${reference.owner}/${reference.repoName}`);
       setMetadata(res.data.data);
     } catch (e) {
       console.error("Failed to fetch repo metadata:", e);

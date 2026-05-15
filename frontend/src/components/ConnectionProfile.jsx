@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
-import { BASE_URL } from "../utils/constants";
+import api from "../utils/api";
 import PostFeed from "./feed/PostFeed";
 import {
   ArrowLeft,
@@ -31,9 +30,7 @@ const ConnectionProfile = () => {
     async function fetchProfile() {
       try {
         setLoading(true);
-        const res = await axios.get(`${BASE_URL}/user/profile/${userId}`, {
-          withCredentials: true,
-        });
+        const res = await api.get(`/user/profile/${userId}`);
         setUser(res.data.data);
       } catch (e) {
         setError(e?.response?.data?.error || "Failed to load profile");

@@ -15,11 +15,7 @@ const InteractionHistory = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/recommendations/interaction-history`,
-        {
-          withCredentials: true
-        }
-      );
+        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/recommendations/interaction-history`);
 
       setHistory(response.data.data);
       setStats(response.data.stats);

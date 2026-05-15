@@ -1,7 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { BASE_URL } from "../utils/constants";
-import axios from "axios";
+import api from "../utils/api";
 
 import { removeUser } from "../utils/userSlice"
 import { removeAllFeed } from "../utils/feedSlice";
@@ -20,10 +19,8 @@ const NavBar = () => {
 
   async function handleLogout() {
     try {
-      const res = await axios.post(BASE_URL + "/logout",
-        {},
-        { withCredentials: true }
-      );
+      const res = await api.post("/logout",
+        {});
       if (res.status === 200) {
         dispatch(removeUser());
         dispatch(removeAllConnections());

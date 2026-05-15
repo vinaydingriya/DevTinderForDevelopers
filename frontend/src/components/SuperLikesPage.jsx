@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
-import { BASE_URL } from "../utils/constants";
+import api from "../utils/api";
 import {
   ArrowLeft,
   Star,
@@ -46,9 +45,7 @@ const SuperLikesPage = () => {
   const fetchSuperLikes = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/superlikes`, {
-        withCredentials: true,
-      });
+      const res = await api.get("/superlikes");
       setProfiles(res.data.data);
     } catch (e) {
       console.error("Failed to load super likes:", e);
@@ -64,11 +61,8 @@ const SuperLikesPage = () => {
   const handleConnect = async (userId) => {
     setConnectingId(userId);
     try {
-      await axios.post(
-        `${BASE_URL}/superlike/${userId}/connect`,
-        {},
-        { withCredentials: true }
-      );
+      await api.post(`/superlike/${userId}/connect`,
+        {});
       // Update profile's status locally
       setProfiles((prev) =>
         prev.map((p) =>
@@ -86,9 +80,7 @@ const SuperLikesPage = () => {
   const handleRemove = async (userId) => {
     setRemovingId(userId);
     try {
-      await axios.delete(`${BASE_URL}/superlike/${userId}`, {
-        withCredentials: true,
-      });
+      await api.delete(`/superlike/${userId}`);
       setProfiles((prev) => prev.filter((p) => p._id !== userId));
     } catch (e) {
       console.error("Failed to remove:", e);

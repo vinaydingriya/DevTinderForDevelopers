@@ -1,6 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
-import { BASE_URL } from "../utils/constants";
+import api from "../utils/api";
 
 const Password = () => {
   const [oldPassword, setOldPassword] = useState("");
@@ -19,14 +18,11 @@ const Password = () => {
     } else {
       setError("");
       try {
-        await axios.patch(
-          BASE_URL + "/profile/password",
+        await api.patch("/profile/password",
           {
             oldPassword,
             newPassword,
-          },
-          { withCredentials: true }
-        );
+          });
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
