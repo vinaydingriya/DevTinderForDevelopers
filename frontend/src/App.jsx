@@ -10,11 +10,12 @@ import Premium from "./components/Premium";
 import PostsPage from "./components/PostsPage";
 import ConnectionProfile from "./components/ConnectionProfile";
 import SuperLikesPage from "./components/SuperLikesPage";
+import ToastNotification from "./components/ToastNotification";
 
 import appStore from "./utils/appStore";
 import { SocketProvider } from "./utils/socketContext";
 
-import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Outlet, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
 
 /**
@@ -32,6 +33,7 @@ function App() {
     <>
       <Provider store={appStore}>
         <SocketProvider>
+          <ToastNotification />
           <BrowserRouter basename="/">
             <Routes>
               {/* Login — standalone, no sidebar */}
@@ -52,6 +54,9 @@ function App() {
                 <Route path="superlikes" element={<SuperLikesPage />} />
                 <Route path="chat" element={<ChatPage />} />
               </Route>
+
+              {/* Catch-all: redirect unknown paths */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
         </SocketProvider>

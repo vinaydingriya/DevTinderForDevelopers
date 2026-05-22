@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import api from "../../utils/api";
-import { setMessages, prependMessages, decrementUnread } from "../../utils/chatSlice";
+import { setMessages, prependMessages, decrementUnread, deleteMessage, deleteRoom } from "../../utils/chatSlice";
 import { useSocket } from "../../utils/socketContext";
 import MessageBubble from "./MessageBubble";
 import ChatInput from "./ChatInput";
@@ -28,6 +28,34 @@ const ChatWindow = ({ roomId, currentUserId, onBack }) => {
   const room = rooms.find((r) => r._id === roomId);
   const partner = room?.participants?.find((p) => p._id !== currentUserId);
   const isOnline = partner ? onlineUsers.includes(partner._id) : false;
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      const res = await api.delete(`/chat/message/${messageId}`);
+      dispatch(deleteMessage({
+        chatRoomId: roomId,
+        messageId,
+        lastMessage: res.data.lastMessage
+      }));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to delete message");
+    }
+  };
+
+  const handleDeleteChat = async () => {
+    if (!room || !partner) return;
+    if (!window.confirm(`Delete entire chat with ${partner.firstName}? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      await api.delete(`/chat/room/${roomId}`);
+      dispatch(deleteRoom(roomId));
+      onBack();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to delete chat");
+    }
+  };
 
   // Join room on mount
   useEffect(() => {
@@ -176,6 +204,15 @@ const ChatWindow = ({ roomId, currentUserId, onBack }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </button>
+          <button
+            onClick={handleDeleteChat}
+            className="p-2 rounded-lg hover:bg-red-500/10 text-red-400/40 hover:text-red-400 transition-colors duration-300"
+            title="Delete Chat History"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -222,6 +259,7 @@ const ChatWindow = ({ roomId, currentUserId, onBack }) => {
                   isSelf={
                     (msg.senderId?._id || msg.senderId) === currentUserId
                   }
+                  onDelete={handleDeleteMessage}
                 />
               ))
             )}

@@ -27,7 +27,7 @@ const navItems = [
   { path: "/posts", icon: PenSquare, label: "Posts" },
   { path: "/chat", icon: MessageCircle, label: "Chats", badge: "chat" },
   { path: "/connections", icon: Users, label: "Connections" },
-  { path: "/requests", icon: Inbox, label: "Requests" },
+  { path: "/requests", icon: Inbox, label: "Requests", badge: "requests" },
   { path: "/profile", icon: User, label: "Profile" },
   { path: "/premium", icon: Crown, label: "Premium" },
 ];
@@ -40,6 +40,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   const unreadCounts = useSelector((store) => store.chat.unreadCounts);
   const totalUnread = Object.values(unreadCounts).reduce((sum, c) => sum + c, 0);
+  const requests = useSelector((store) => store.requests);
+  const totalRequests = requests.length;
 
   async function handleLogout() {
     try {
@@ -120,7 +122,12 @@ const Sidebar = ({ collapsed, onToggle }) => {
       <nav className="flex-1 py-1 overflow-y-auto">
         {navItems.map(({ path, icon: Icon, label, badge }) => {
           const active = isActive(path);
-          const showBadge = badge === "chat" && totalUnread > 0;
+          const showChatBadge = badge === "chat" && totalUnread > 0;
+          const showRequestsBadge = badge === "requests" && totalRequests > 0;
+          const showBadge = showChatBadge || showRequestsBadge;
+          const badgeValue = showChatBadge
+            ? (totalUnread > 99 ? "99+" : totalUnread)
+            : (totalRequests > 99 ? "99+" : totalRequests);
 
           return (
             <Link
@@ -132,8 +139,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
               <Icon className="nav-icon" strokeWidth={active ? 2.2 : 1.8} />
               <span className="sidebar-label truncate">{label}</span>
               {showBadge && (
-                <span className="nav-badge">
-                  {totalUnread > 99 ? "99+" : totalUnread}
+                <span
+                  className="nav-badge"
+                  style={showRequestsBadge ? { background: '#8b5cf6', boxShadow: '0 0 8px rgba(139, 92, 246, 0.4)' } : undefined}
+                >
+                  {badgeValue}
                 </span>
               )}
             </Link>

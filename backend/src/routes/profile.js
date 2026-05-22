@@ -1,10 +1,32 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const profileRouter = express.Router();
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const { cloudinary } = require("../config/cloudinary");
 
 const { userAuth } = require("../middlewares/auth");
 const { filterFields } = require("../utils/filterFields");
 const { validateEditProfileData, validatePassword } = require("../utils/validation");
+
+// Cloudinary is already configured in config/cloudinary.js, but we need a
+// separate storage config for profile avatars (different folder & limits)
+const avatarStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "devtinder-avatars",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    resource_type: "image",
+    transformation: [
+      { width: 500, height: 500, crop: "fill", gravity: "face" },
+      { quality: "auto", fetch_format: "auto" },
+    ],
+  },
+});
+const avatarUpload = multer({
+  storage: avatarStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max for avatars
+});
 
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
@@ -37,6 +59,42 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     });
   } catch (e) {
     res.status(400).json({error: e.message});
+  }
+});
+
+// ── Profile Photo Upload ──
+profileRouter.post("/profile/photo", userAuth, avatarUpload.single("photo"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No photo file provided" });
+    }
+
+    const loggedInUser = req.user;
+    const oldPhotoUrl = loggedInUser.photoUrl;
+
+    // Delete old avatar from Cloudinary if it's a Cloudinary URL
+    if (oldPhotoUrl && oldPhotoUrl.includes("cloudinary.com") && oldPhotoUrl.includes("devtinder-avatars")) {
+      try {
+        const parts = oldPhotoUrl.split("/");
+        const folder = parts[parts.length - 2];
+        const fileWithExt = parts[parts.length - 1];
+        const publicId = folder + "/" + fileWithExt.split(".")[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (_) {
+        // Old photo deletion is best-effort
+      }
+    }
+
+    loggedInUser.photoUrl = req.file.path;
+    await loggedInUser.save();
+
+    res.json({
+      message: "Profile photo updated",
+      data: filterFields(loggedInUser),
+      photoUrl: req.file.path,
+    });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
   }
 });
 

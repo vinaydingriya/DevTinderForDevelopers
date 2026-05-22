@@ -4,6 +4,7 @@ const { userAuth } = require("../middlewares/auth");
 const razorpayInstance = require("../utils/razorpay")
 const Payment = require("../models/payment");
 const User = require("../models/user")
+const crypto = require("crypto");
 
 const { membershipAmount } = require("../utils/constants");
 
@@ -14,13 +15,17 @@ paymentRouter.post("/payment/create", userAuth, async (req, res) => {
     const { firstName, lastName, email } = req.user;
     const { membershipType } = req.body;
 
+    if (!membershipType || !membershipAmount[membershipType]) {
+        return res.status(400).json({ error: "Invalid membership type" });
+    }
+
     try {
         const order = await razorpayInstance.orders.create({
             amount: membershipAmount[membershipType] * 100,
             currency: "INR",
             notes: {
                 firstName,
-                lastName,
+                lastName: lastName || "",
                 email,
                 membershipType
             }
@@ -40,8 +45,52 @@ paymentRouter.post("/payment/create", userAuth, async (req, res) => {
         res.json({ data: savedPayment, keyId: process.env.RAZORPAY_KEY_ID });
     }
     catch (err) {
-        console.log(err)
-        res.status(500).send({ error: err });
+        console.error("Payment create error:", err.message || err);
+        res.status(500).json({ error: err.message || "Failed to create payment order" });
+    }
+})
+
+// Client-side payment verification (industry standard)
+paymentRouter.post("/payment/verify", userAuth, async (req, res) => {
+    try {
+        const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+        if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+            return res.status(400).json({ msg: "Missing payment verification fields" });
+        }
+
+        // Verify signature using HMAC SHA256
+        const generatedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(razorpay_order_id + "|" + razorpay_payment_id)
+            .digest("hex");
+
+        if (generatedSignature !== razorpay_signature) {
+            return res.status(400).json({ msg: "Payment verification failed — invalid signature" });
+        }
+
+        // Signature valid — update payment record
+        const payment = await Payment.findOne({ order_id: razorpay_order_id });
+        if (!payment) {
+            return res.status(404).json({ msg: "Payment record not found" });
+        }
+
+        payment.status = "captured";
+        payment.payment_id = razorpay_payment_id;
+        await payment.save();
+
+        // Mark user as premium
+        const user = await User.findById(payment.user_id);
+        if (user) {
+            user.isPremium = true;
+            user.membershipType = payment.notes.membershipType;
+            await user.save();
+        }
+
+        res.json({ msg: "Payment verified successfully", isPremium: true });
+    } catch (err) {
+        console.error("Payment verification error:", err);
+        res.status(500).json({ msg: "Internal error during payment verification" });
     }
 })
 
@@ -76,12 +125,7 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
                 await user.save();
             }
         }
-        console.log("User updated");
-
-        // if (req.body.event === "captured") {
-        // }
-        // if (req.body.event === "failed") {
-        // }
+        console.log("Webhook processed — user updated");
 
         res.status(200).json({ msg: "Webhook processed" });
     }
@@ -91,12 +135,12 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
     }
 })
 
-paymentRouter.get("/verify/isPremium", userAuth, async (req, res)=> {
+paymentRouter.get("/verify/isPremium", userAuth, async (req, res)=>{
     const user = req.user.toJSON(); // important
     if (user.isPremium) {
-        return res.json({isPremium: true});
+        return res.json({ isPremium: true, membershipType: user.membershipType || "" });
     }
-    return res.json({isPremium: false});
+    return res.json({ isPremium: false });
 })
 
 module.exports = paymentRouter

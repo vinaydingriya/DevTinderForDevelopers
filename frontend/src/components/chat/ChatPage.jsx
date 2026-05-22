@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import api from "../../utils/api";
-import { setRooms, setActiveRoom } from "../../utils/chatSlice";
+import { setRooms, setActiveRoom, deleteRoom } from "../../utils/chatSlice";
 import { useSocket } from "../../utils/socketContext";
 import ChatList from "./ChatList";
 import ChatWindow from "./ChatWindow";
@@ -74,6 +74,18 @@ const ChatPage = () => {
     dispatch(setActiveRoom(null));
   };
 
+  const handleDeleteRoom = async (roomId) => {
+    try {
+      await api.delete(`/chat/room/${roomId}`);
+      dispatch(deleteRoom(roomId));
+      if (activeRoomId === roomId) {
+        handleBackToList();
+      }
+    } catch (e) {
+      setError(e?.response?.data?.error || "Failed to delete chat");
+    }
+  };
+
   if (!user?.data) return null;
 
   return (
@@ -100,6 +112,7 @@ const ChatPage = () => {
           loading={loading}
           error={error}
           onSelectRoom={handleSelectRoom}
+          onDeleteRoom={handleDeleteRoom}
           currentUserId={user.data._id}
         />
       </div>

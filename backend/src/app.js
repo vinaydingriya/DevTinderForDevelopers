@@ -47,9 +47,10 @@ app.use("/", chatRouter);
 app.use("/", postRouter);
 app.use("/", superLikeRouter);
 
-// Initialize Socket.IO
+// Initialize Socket.IO and store reference on app for route access
 const { initializeSocket } = require("./socket/socketHandler");
 initializeSocket(io);
+app.set("io", io);
 
 connectDB()
   .then(() => {

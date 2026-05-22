@@ -181,4 +181,96 @@ chatRouter.get("/chat/github/repo/:owner/:repo", userAuth, async (req, res) => {
   }
 });
 
+// Delete a specific message
+chatRouter.delete("/chat/message/:messageId", userAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { messageId } = req.params;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    // Verify only sender can delete their message
+    if (!message.senderId.equals(userId)) {
+      return res.status(403).json({ error: "Unauthorized: You can only delete your own messages" });
+    }
+
+    const { chatRoomId } = message;
+
+    // Delete the message
+    await Message.deleteOne({ _id: messageId });
+
+    // Update lastMessage in the room if this was the last message
+    const room = await ChatRoom.findById(chatRoomId);
+    if (room) {
+      // Find the new latest message
+      const latestMessage = await Message.findOne({ chatRoomId })
+        .sort({ createdAt: -1 })
+        .populate("senderId", "firstName lastName");
+
+      if (latestMessage) {
+        room.lastMessage = {
+          text: latestMessage.text.substring(0, 100),
+          senderId: latestMessage.senderId._id,
+          createdAt: latestMessage.createdAt,
+        };
+      } else {
+        // No messages left in room
+        room.lastMessage = {
+          text: "",
+          senderId: null,
+          createdAt: null,
+        };
+      }
+      await room.save();
+    }
+
+    // Emit real-time deletion socket event to the chat room
+    const io = req.app.get("io");
+    if (io) {
+      io.to(chatRoomId.toString()).emit("message_deleted", { messageId, chatRoomId });
+    }
+
+    res.json({ message: "Message deleted successfully", chatRoomId, lastMessage: room?.lastMessage });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Delete an entire chat room and its messages
+chatRouter.delete("/chat/room/:chatRoomId", userAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { chatRoomId } = req.params;
+
+    const room = await ChatRoom.findById(chatRoomId);
+    if (!room) {
+      return res.status(404).json({ error: "Chat room not found" });
+    }
+
+    // Verify user is a participant
+    if (!room.participants.some((p) => p.equals(userId))) {
+      return res.status(403).json({ error: "Unauthorized: You are not a participant in this chat" });
+    }
+
+    // Delete all messages in the room
+    await Message.deleteMany({ chatRoomId });
+
+    // Delete the chat room document
+    await ChatRoom.deleteOne({ _id: chatRoomId });
+
+    // Emit real-time chat deletion socket event to participants
+    const io = req.app.get("io");
+    if (io) {
+      io.to(chatRoomId.toString()).emit("chat_deleted", { chatRoomId });
+    }
+
+    res.json({ message: "Chat room deleted successfully" });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 module.exports = chatRouter;

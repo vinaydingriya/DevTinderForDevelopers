@@ -18,7 +18,7 @@ const paymentSchema = new mongoose.Schema({
         },
         lastName: {
             type: String,
-            required: true
+            default: ""
         },
         email: {
             type: String,

@@ -1,47 +1,108 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../utils/api";
-import { useEffect } from "react";
 
 const Premium = () => {
   const [isPremium, setIsPremium] = useState(false);
+  const [membershipType, setMembershipType] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
-  const verifyPremiumStatus = async () => {
+  const verifyPremiumStatus = useCallback(async () => {
     try {
+      setLoading(true);
       const res = await api.get("/verify/isPremium");
       if (res.data.isPremium) {
         setIsPremium(true);
+        setMembershipType(res.data.membershipType || "");
       }
-    } catch(e) { console.log(e); }
-  }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     verifyPremiumStatus();
-  }, []);
+  }, [verifyPremiumStatus]);
 
-  const buyMembership = async (membershipType) => {
-    const res = await api.post("/payment/create", { membershipType });
-    const order = res.data;
-    console.log(order);
+  const buyMembership = async (type) => {
+    try {
+      setPaymentLoading(true);
 
-    const { amount, notes, currency, order_id } = order.data;
+      // 1. Create order on backend
+      const res = await api.post("/payment/create", { membershipType: type });
+      const order = res.data;
 
-    const options = {
-      key: order.keyId,
-      amount,
-      currency,
-      order_id,
-      prefill: {
-        name: notes.firstName + " " + notes.lastName,
-        email: notes.email,
-      },
-      theme: {
-        color: "#F37254",
-      },
-      handler: verifyPremiumStatus
-    };
+      const { amount, notes, currency, order_id } = order.data;
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+      // 2. Ensure Razorpay SDK is loaded
+      if (!window.Razorpay) {
+        alert("Payment service is loading. Please try again in a moment.");
+        setPaymentLoading(false);
+        return;
+      }
+
+      // 3. Open Razorpay checkout with proper handler
+      const options = {
+        key: order.keyId,
+        amount,
+        currency,
+        name: "DevTinder",
+        description: `${type.charAt(0).toUpperCase() + type.slice(1)} Membership`,
+        order_id: order_id,
+        prefill: {
+          name: notes.firstName + " " + notes.lastName,
+          email: notes.email,
+        },
+        theme: {
+          color: "#7c3aed",
+        },
+        handler: async function (response) {
+          // 4. Verify payment on backend with signature
+          try {
+            await api.post("/payment/verify", {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            // Payment verified — refresh premium status
+            await verifyPremiumStatus();
+          } catch (err) {
+            console.error("Payment verification failed:", err);
+            alert("Payment verification failed. If amount was deducted, it will be refunded within 5-7 days. Please contact support.");
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setPaymentLoading(false);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", function (response) {
+        console.error("Payment failed:", response.error);
+        alert(`Payment failed: ${response.error.description}`);
+        setPaymentLoading(false);
+      });
+
+      rzp.open();
+      setPaymentLoading(false);
+    } catch (err) {
+      console.error("Error creating order:", err);
+      alert("Could not initiate payment. Please try again.");
+      setPaymentLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <span className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin inline-block" />
+      </div>
+    );
   }
 
   if (isPremium) {
@@ -49,7 +110,9 @@ const Premium = () => {
       <div className="flex flex-col items-center justify-center py-20 animate-fade-in-up">
         <div className="text-6xl mb-4 animate-float">👑</div>
         <h1 className="text-3xl font-bold gradient-text mb-2">Premium Member</h1>
-        <p className="text-slate-400">You&apos;re enjoying all premium benefits!</p>
+        <p className="text-slate-400">
+          You&apos;re enjoying all {membershipType || "premium"} benefits!
+        </p>
       </div>
     );
   }
@@ -89,14 +152,15 @@ const Premium = () => {
 
           <button
             onClick={() => buyMembership("silver")}
-            className="w-full py-3 rounded-xl font-semibold text-white transition-all border-0"
+            disabled={paymentLoading}
+            className="w-full py-3 rounded-xl font-semibold text-white transition-all border-0 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: 'linear-gradient(135deg, #94a3b8, #64748b)',
             }}
-            onMouseOver={(e) => { e.target.style.boxShadow = '0 0 20px rgba(148,163,184,0.4)'; e.target.style.transform = 'translateY(-1px)' }}
+            onMouseOver={(e) => { if (!paymentLoading) { e.target.style.boxShadow = '0 0 20px rgba(148,163,184,0.4)'; e.target.style.transform = 'translateY(-1px)' } }}
             onMouseOut={(e) => { e.target.style.boxShadow = 'none'; e.target.style.transform = 'translateY(0)' }}
           >
-            Get Silver →
+            {paymentLoading ? "Processing..." : "Get Silver →"}
           </button>
         </div>
 
@@ -135,14 +199,15 @@ const Premium = () => {
 
           <button
             onClick={() => buyMembership("gold")}
-            className="w-full py-3 rounded-xl font-semibold text-white transition-all border-0"
+            disabled={paymentLoading}
+            className="w-full py-3 rounded-xl font-semibold text-white transition-all border-0 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: 'linear-gradient(135deg, #f59e0b, #d97706)',
             }}
-            onMouseOver={(e) => { e.target.style.boxShadow = '0 0 20px rgba(245,158,11,0.4)'; e.target.style.transform = 'translateY(-1px)' }}
+            onMouseOver={(e) => { if (!paymentLoading) { e.target.style.boxShadow = '0 0 20px rgba(245,158,11,0.4)'; e.target.style.transform = 'translateY(-1px)' } }}
             onMouseOut={(e) => { e.target.style.boxShadow = 'none'; e.target.style.transform = 'translateY(0)' }}
           >
-            Get Gold →
+            {paymentLoading ? "Processing..." : "Get Gold →"}
           </button>
         </div>
       </div>

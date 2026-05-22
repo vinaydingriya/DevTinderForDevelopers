@@ -116,6 +116,44 @@ const chatSlice = createSlice({
         room.updatedAt = new Date().toISOString();
       }
     },
+    deleteMessage: (state, action) => {
+      const { chatRoomId, messageId, lastMessage } = action.payload;
+      if (state.messages[chatRoomId]) {
+        state.messages[chatRoomId] = state.messages[chatRoomId].filter(
+          (msg) => (msg._id !== messageId && msg.clientMessageId !== messageId)
+        );
+      }
+      
+      const room = state.rooms.find((r) => r._id === chatRoomId);
+      if (room) {
+        if (lastMessage) {
+          room.lastMessage = lastMessage;
+        } else if (state.messages[chatRoomId] && state.messages[chatRoomId].length > 0) {
+          const prevMsg = state.messages[chatRoomId][state.messages[chatRoomId].length - 1];
+          room.lastMessage = {
+            text: prevMsg.text?.substring(0, 100),
+            senderId: prevMsg.senderId?._id || prevMsg.senderId,
+            createdAt: prevMsg.createdAt,
+          };
+        } else {
+          room.lastMessage = {
+            text: "",
+            senderId: null,
+            createdAt: null,
+          };
+        }
+      }
+    },
+    deleteRoom: (state, action) => {
+      const chatRoomId = action.payload;
+      state.rooms = state.rooms.filter((room) => room._id !== chatRoomId);
+      delete state.messages[chatRoomId];
+      delete state.unreadCounts[chatRoomId];
+      delete state.typingUsers[chatRoomId];
+      if (state.activeRoomId === chatRoomId) {
+        state.activeRoomId = null;
+      }
+    },
     resetChat: () => ({
       rooms: [],
       activeRoomId: null,
@@ -143,6 +181,8 @@ export const {
   incrementUnread,
   decrementUnread,
   updateRoomLastMessage,
+  deleteMessage,
+  deleteRoom,
   resetChat,
 } = chatSlice.actions;
 

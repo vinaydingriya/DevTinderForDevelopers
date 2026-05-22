@@ -44,7 +44,16 @@ const Login = () => {
 
       if (res.status === 200) {
         setError("");
-        setMessage("User added successfully!!");
+        setMessage("🎉 Account created successfully! Please log in.");
+        // Switch to login form after a brief delay
+        setTimeout(() => {
+          setIsLogin(true);
+          setPassword("");
+          setFirstName("");
+          setLastName("");
+          // Keep email so user doesn't have to retype it
+          setMessage("");
+        }, 2000);
       }
     } catch (e) {
       console.log(e);

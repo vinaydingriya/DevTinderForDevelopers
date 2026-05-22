@@ -96,14 +96,18 @@ const DeveloperCard = ({ user, totalCount, currentIndex }) => {
   const matchPercent = score ? (score * 100).toFixed(0) : null;
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-3 sm:px-4">
+    <div className="flex flex-col items-center justify-center h-full w-full px-3 sm:px-4">
       {/* Card */}
       <div
-        className={`relative w-full max-w-[380px] rounded-3xl overflow-hidden glass-card gradient-border ${getAnimClass()}`}
-        style={{ maxHeight: "calc(100vh - 140px)" }}
+        className={`relative w-full max-w-[360px] sm:max-w-[380px] rounded-3xl overflow-hidden glass-card gradient-border flex flex-col ${getAnimClass()}`}
+        style={{
+          height: "calc(100vh - 160px)",
+          maxHeight: "560px",
+          minHeight: "380px",
+        }}
       >
         {/* Photo */}
-        <div className="relative h-[280px] sm:h-[340px] md:h-[380px] overflow-hidden">
+        <div className="relative flex-1 min-h-0 overflow-hidden">
           <img
             src={photoUrl}
             alt={`${firstName}'s photo`}
@@ -142,16 +146,16 @@ const DeveloperCard = ({ user, totalCount, currentIndex }) => {
         </div>
 
         {/* Bio */}
-        <div className="p-5 pb-3">
-          {about && (
-            <p className="text-slate-300 text-sm leading-relaxed line-clamp-2 mb-2">
+        {about && (
+          <div className="px-5 py-3 flex-shrink-0">
+            <p className="text-slate-300 text-sm leading-relaxed line-clamp-2">
               {about}
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Action buttons */}
-        <div className="flex items-center justify-center gap-4 px-5 pb-5">
+        <div className="flex items-center justify-center gap-4 px-5 pb-5 pt-1 flex-shrink-0">
           {/* Pass */}
           <button
             onClick={() => handleSend("ignored")}

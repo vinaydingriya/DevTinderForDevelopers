@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../../utils/api";
 import { addUser } from "../../utils/userSlice";
+import { addRequests } from "../../utils/requestsSlice";
 import Sidebar from "./Sidebar";
 import MobileNav from "./MobileNav";
 
@@ -41,6 +42,32 @@ const AppLayout = () => {
       controller.abort();
     };
   }, [dispatch, navigate, user]);
+
+  // Pre-fetch pending connection requests once authenticated to initialize badge counts
+  useEffect(() => {
+    if (!user?.data?._id) return;
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    async function fetchRequests() {
+      try {
+        const res = await api.get("/user/requests/received", { signal });
+        dispatch(addRequests(res.data.data));
+      } catch (e) {
+        if (e.code !== "ERR_CANCELED" && e.code !== "ECONNABORTED") {
+          console.error("Failed to pre-fetch requests:", e);
+        }
+      }
+    }
+
+    fetchRequests();
+
+    return () => {
+      controller.abort();
+    };
+  }, [dispatch, user?.data?._id]);
+
 
   // Hide mobile nav on chat detail view
   const hideMobileNav = location.pathname.startsWith("/chat/") && location.pathname !== "/chat";

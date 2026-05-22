@@ -18,8 +18,19 @@ const Feed = () => {
   const [isFiltered, setIsFiltered] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : true
+  );
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(min-width: 1024px)");
+    const listener = (e) => setIsDesktop(e.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -150,7 +161,7 @@ const Feed = () => {
 
   // ── Main 3-column layout ──
   return (
-    <div className="flex h-full overflow-hidden relative">
+    <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden relative">
       {/* Filter button — top right */}
       <button
         onClick={() => setShowFilters(true)}
@@ -166,28 +177,40 @@ const Feed = () => {
       </button>
 
       {/* Center — Developer Card */}
-      <div className="flex-1 flex items-center justify-center min-w-0">
+      <div className="flex-1 flex flex-col items-center justify-start lg:justify-center min-w-0 w-full min-h-[calc(100vh-80px)] lg:min-h-0 py-4 lg:py-0">
         <DeveloperCard
           key={currentDev._id}
           user={currentDev}
           totalCount={feed.length}
           currentIndex={0}
         />
+
+        {/* Mobile-only Details + Posts section (rendered below card on smaller screens) */}
+        {!isDesktop && (
+          <div className="w-full max-w-[380px] mt-6 px-3 flex flex-col gap-6 pb-20">
+            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <DeveloperDetails user={currentDev} />
+            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <PostFeed userId={currentDev._id} />
+          </div>
+        )}
       </div>
 
       {/* Right — Details + Posts panel */}
-      <div className="hidden lg:flex w-[360px] xl:w-[400px] flex-col border-l border-white/5 h-full">
-        <div className="flex-1 overflow-y-auto p-5">
-          {/* Developer details */}
-          <DeveloperDetails user={currentDev} />
+      {isDesktop && (
+        <div className="hidden lg:flex w-[360px] xl:w-[400px] flex-col border-l border-white/5 h-full">
+          <div className="flex-1 overflow-y-auto p-5">
+            {/* Developer details */}
+            <DeveloperDetails user={currentDev} />
 
-          {/* Divider */}
-          <div className="my-5 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            {/* Divider */}
+            <div className="my-5 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-          {/* Posts section */}
-          <PostFeed userId={currentDev._id} />
+            {/* Posts section */}
+            <PostFeed userId={currentDev._id} />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Filter modal */}
       {showFilters && (

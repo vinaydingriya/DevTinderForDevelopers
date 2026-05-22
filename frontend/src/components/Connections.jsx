@@ -5,11 +5,24 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { addConnections } from '../utils/connectionsSlice';
+import { addConnections, removeConnection } from '../utils/connectionsSlice';
 
 const Connections = () => {
   const dispatch = useDispatch();
-  const connections = useSelector(store => store.connections)
+  const connections = useSelector(store => store.connections);
+
+  const handleRemoveConnection = async (connectionId, name) => {
+    if (!window.confirm(`Are you sure you want to remove connection with ${name}? This will also delete all chat history.`)) {
+      return;
+    }
+    try {
+      await api.delete(`/connection/remove/${connectionId}`);
+      dispatch(removeConnection(connectionId));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to remove connection");
+    }
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -78,13 +91,24 @@ const Connections = () => {
                 )}
               </div>
             </Link>
-            <Link
-              to={`/chat?userId=${connection._id}`}
-              className="text-2xl flex-shrink-0 hover:scale-110 transition-transform cursor-pointer"
-              title="Chat"
-            >
-              💬
-            </Link>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <Link
+                to={`/chat?userId=${connection._id}`}
+                className="text-2xl hover:scale-110 transition-transform cursor-pointer"
+                title="Chat"
+              >
+                💬
+              </Link>
+              <button
+                onClick={() => handleRemoveConnection(connection._id, `${connection.firstName} ${connection.lastName || ""}`)}
+                className="p-1.5 rounded-xl text-red-400/40 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300"
+                title="Remove Connection"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           </div>
         ))}
       </div>

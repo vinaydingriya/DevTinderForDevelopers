@@ -2,7 +2,7 @@ import RepoCard from "./RepoCard";
 
 const REPO_MENTION_REGEX = /@([a-zA-Z0-9\-_.]+)\/([a-zA-Z0-9\-_.]+)(\/[a-zA-Z0-9\-_./]*)?/g;
 
-const MessageBubble = ({ message, isSelf }) => {
+const MessageBubble = ({ message, isSelf, onDelete }) => {
   const formatTime = (dateStr) => {
     if (!dateStr) return "";
     return new Date(dateStr).toLocaleTimeString([], {
@@ -91,7 +91,22 @@ const MessageBubble = ({ message, isSelf }) => {
       : "";
 
   return (
-    <div className={`flex ${isSelf ? "justify-end" : "justify-start"} group`}>
+    <div className={`flex ${isSelf ? "justify-end" : "justify-start"} items-center gap-2 group`}>
+      {isSelf && onDelete && (
+        <button
+          onClick={() => {
+            if (window.confirm("Delete this message?")) {
+              onDelete(message._id || message.clientMessageId);
+            }
+          }}
+          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+          title="Delete Message"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      )}
       <div className={`max-w-[75%] ${isSelf ? "order-1" : ""}`}>
         {/* Sender name (for received messages) */}
         {!isSelf && senderName && (

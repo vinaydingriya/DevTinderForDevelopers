@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
-const ChatList = ({ rooms, activeRoomId, loading, error, onSelectRoom, currentUserId }) => {
+const ChatList = ({ rooms, activeRoomId, loading, error, onSelectRoom, onDeleteRoom, currentUserId }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const onlineUsers = useSelector((store) => store.chat.onlineUsers);
   const unreadCounts = useSelector((store) => store.chat.unreadCounts);
@@ -106,7 +106,7 @@ const ChatList = ({ rooms, activeRoomId, loading, error, onSelectRoom, currentUs
                 <button
                   key={room._id}
                   onClick={() => onSelectRoom(room._id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left ${
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left group relative ${
                     isActive
                       ? "bg-purple-500/15 border border-purple-500/20"
                       : "hover:bg-white/5 border border-transparent"
@@ -129,7 +129,7 @@ const ChatList = ({ rooms, activeRoomId, loading, error, onSelectRoom, currentUs
                   </div>
 
                   {/* Info */}
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 pr-6">
                     <div className="flex items-center justify-between mb-0.5">
                       <h3
                         className={`font-semibold text-sm truncate ${
@@ -140,22 +140,38 @@ const ChatList = ({ rooms, activeRoomId, loading, error, onSelectRoom, currentUs
                         {partner.lastName || ""}
                       </h3>
                       {room.lastMessage?.createdAt && (
-                        <span className="text-[10px] text-slate-500 flex-shrink-0 ml-2">
+                        <span className="text-[10px] text-slate-500 flex-shrink-0 ml-2 group-hover:opacity-0 transition-opacity">
                           {formatTime(room.lastMessage.createdAt)}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-slate-500 truncate max-w-[180px]">
+                      <p className="text-xs text-slate-500 truncate max-w-[180px] group-hover:max-w-[140px] transition-all">
                         {room.lastMessage?.text || "Start a conversation..."}
                       </p>
                       {unread > 0 && (
-                        <span className="bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center flex-shrink-0 ml-2 shadow-lg shadow-emerald-500/30">
+                        <span className="bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center flex-shrink-0 ml-2 shadow-lg shadow-emerald-500/30 group-hover:opacity-0 transition-opacity">
                           {unread}
                         </span>
                       )}
                     </div>
                   </div>
+
+                  {/* Hover delete chat button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm(`Delete entire chat with ${partner.firstName}? This cannot be undone.`)) {
+                        onDeleteRoom(room._id);
+                      }
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 z-10"
+                    title="Delete Chat"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </button>
               );
             })}

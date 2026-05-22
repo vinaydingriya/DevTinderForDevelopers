@@ -6,6 +6,7 @@ import requestsReducer from "./requestsSlice"
 import recommendationReducer from "./recommendationSlice"
 import filterReducer from "./filterSlice"
 import chatReducer from "./chatSlice"
+import notificationReducer from "./notificationSlice"
 
 const store = configureStore({
     reducer: {
@@ -15,7 +16,8 @@ const store = configureStore({
         requests: requestsReducer,
         recommendations: recommendationReducer,
         filters: filterReducer,
-        chat: chatReducer
+        chat: chatReducer,
+        notifications: notificationReducer,
     }
 })
 export default store;

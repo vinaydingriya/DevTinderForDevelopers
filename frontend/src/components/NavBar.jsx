@@ -16,6 +16,8 @@ const NavBar = () => {
 
   const unreadCounts = useSelector(store => store.chat.unreadCounts);
   const totalUnread = Object.values(unreadCounts).reduce((sum, c) => sum + c, 0);
+  const requests = useSelector(store => store.requests);
+  const totalRequests = requests.length;
 
   async function handleLogout() {
     try {
@@ -88,6 +90,11 @@ const NavBar = () => {
               <li>
                 <Link to="/requests" className="flex items-center gap-2 rounded-lg hover:bg-purple-500/10 transition-colors">
                   <span>📩</span> Requests
+                  {totalRequests > 0 && (
+                    <span className="ml-auto bg-purple-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                      {totalRequests > 99 ? '99+' : totalRequests}
+                    </span>
+                  )}
                 </Link>
               </li>
               <li>
